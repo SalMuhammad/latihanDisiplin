@@ -13,43 +13,54 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-white">
-    <div id="formContainer" class="hidden mt-2 pt-2 px-3 bg-white rounded-lg shadow-md w-[70%] absolute z-20 inset-0 m-auto">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-semibold text-gray-800">Tambah Tugas Baru</h2>
-          <button id="btnClose" class="text-gray-500 hover:text-gray-700">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+
+    <div id="formContainer" style="display: none; max-height: 400px; overflow-y: auto; border: 1px solid #ccc; background: #fff; position: absolute; inset: 0; margin: auto; width: 70%; z-index: 20; padding: 16px; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h2>Tambah Tugas Baru</h2>
+          <button id="btnClose" style="background: none; border: none; cursor: pointer;">
+            ✖
           </button>
         </div>
-    
-        <div class="mb-2">
-          <label class="block text-gray-700 mb-1">Jenis Habit:</label>
-          <select id="jenisHabit" class="w-full max-w-xs p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">-- Pilih --</option>
+      
+        <div style="margin-bottom: 12px;">
+          <select id="jenisHabit" style="width: 100%; padding: 8px;">
+            <option value="">-- Pilih Jenis Habit --</option>
             <option value="pembentukan">Pembentukan</option>
             <option value="pemusnahan">Pemusnahan</option>
           </select>
         </div>
-    
-        <div id="kategoriGroup" class="mb-1 hidden">
-          <label class="block text-gray-700 mb-1">Kategori Tugas:</label>
-          <select id="kategoriTugas" class="w-full max-w-xs p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">-- Pilih --</option>
+      
+        <div id="kategoriGroup" style="margin-bottom: 12px; display: none;">
+          <select id="kategoriTugas" style="width: 100%; padding: 8px;">
+            <option value="">-- Pilih Kategori --</option>
             <option value="harian">Harian</option>
             <option value="mingguan">Mingguan</option>
             <option value="bulanan">Bulanan</option>
           </select>
         </div>
+      
+        <div id="formInputs" style="display: none; margin-bottom: 12px;"></div>
+        <button id="btnSimpan" style="display: none; padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Simpan</button>
+      </div>
+      
+      <div id="output" style="border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin-top: 16px;"></div>
+      
+      
+      
     
-        <div id="formInputs" class="mb-2 hidden"></div>
-        <button id="btnSimpan" class="hidden px-2 py-2.5 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition-colors duration-300">
-          Simpan
-        </button>
-    </div>
-    
-      <div id="output" class=" rounded-lg shadow-md"></div>
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

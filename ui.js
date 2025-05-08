@@ -1,109 +1,107 @@
-$(document).ready(function() {
-    const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
-    $("#btnTambahTugas").click(function() {
-      $("#formContainer").removeClass("hidden");
-    });
+$("#btnTambahTugas").click(function() {
+  $("#formContainer").show();
+});
 
-    $("#btnClose").click(function() {
-      $("#formContainer").addClass("hidden");
-      // Reset form
-      $("#formInputs").html("").addClass("hidden");
-      $("#btnSimpan").addClass("hidden");
-      $("#jenisHabit").val("");
-      $("#kategoriTugas").val("");
-      $("#kategoriGroup").addClass("hidden");
-    });
+$("#btnClose").click(function() {
+  $("#formContainer").hide();
+  $("#formInputs").hide().html("");
+  $("#btnSimpan").hide();
+  $("#jenisHabit").val("");
+  $("#kategoriTugas").val("");
+  $("#kategoriGroup").hide();
+});
 
-    $("#jenisHabit").change(function() {
-      $("#kategoriGroup").removeClass("hidden");
-      $("#kategoriTugas").val("");
-      $("#formInputs").html("").addClass("hidden");
-      $("#btnSimpan").addClass("hidden");
-    });
+$("#jenisHabit").change(function() {
+  $("#kategoriGroup").show();
+  $("#kategoriTugas").val("");
+  $("#formInputs").hide().html("");
+  $("#btnSimpan").hide();
+});
 
-    $("#kategoriTugas").change(function() {
-      const kategori = $(this).val();
-      $("#formInputs").html("").removeClass("hidden");
-      $("#btnSimpan").addClass("hidden");
+$("#kategoriTugas").change(function() {
+  const kategori = $(this).val();
+  let html = "";
+  const commonFields = `
+    <input type="text" id="namaTugas" placeholder="Nama Kebiasaan" style="width: 100%; padding: 6px; margin-bottom: 8px;" />
+    <textarea id="deskripsiTugas" placeholder="Deskripsi" style="width: 100%; padding: 6px; margin-bottom: 8px;"></textarea>
+    <select id="prioritasTugas" style="width: 100%; padding: 6px; margin-bottom: 8px;">
+      <option value="">-- Prioritas --</option>
+      <option value="Tinggi">Tinggi</option>
+      <option value="Sedang">Sedang</option>
+      <option value="Rendah">Rendah</option>
+    </select>
+    <input type="number" id="nominalHadiah" min="0" placeholder="Nominal Hadiah (Rp)" style="width: 100%; padding: 6px; margin-bottom: 8px;" />
+  `;
 
-      const commonFields = `
-        <label class="block text-gray-700 mb-1">Nama Kebiasaan:</label>
-        <input type="text" id="namaTugas" placeholder="Contoh: Olahraga pagi" 
-               class="w-full max-w-xs p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3" />
+  if (kategori === "harian") {
+    html = commonFields;
+  } else if (kategori === "mingguan") {
+    const hariOptions = hariList.map(day => `<option value="${day.toLowerCase()}" ${day === 'Sabtu' ? 'selected' : ''}>${day}</option>`).join("");
+    html = `${commonFields}<select id="deadlineHari" style="width: 100%; padding: 6px; margin-bottom: 8px;">${hariOptions}</select>`;
+  } else if (kategori === "bulanan") {
+    const tanggalOptions = Array.from({ length: 32 }, (_, i) => i + 1).map(tgl => `<option value="${tgl}" ${tgl === 32 ? "selected" : ""}>${tgl}</option>`).join("");
+    html = `${commonFields}<select id="deadlineTanggal" style="width: 100%; padding: 6px; margin-bottom: 8px;">${tanggalOptions}</select>`;
+  }
 
-        <label class="block text-gray-700 mb-1">Nominal Hadiah (Rp):</label>
-        <input type="number" id="nominalHadiah" min="0" 
-               class="w-full max-w-xs p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-      `;
+  $("#formInputs").html(html).show();
+  $("#btnSimpan").show();
+});
 
-      if (kategori === "harian") {
-        $("#formInputs").html(commonFields);
-        $("#btnSimpan").removeClass("hidden");
-      } else if (kategori === "mingguan") {
-        const hariOptions = hariList.map(day => {
-          const value = day.toLowerCase();
-          return `<option value="${value}" ${value === 'sabtu' ? 'selected' : ''}>${day}</option>`;
-        }).join("");
 
-        $("#formInputs").html(`
-          ${commonFields}
-          <label class="block text-gray-700 mb-1 mt-3">Deadline Mingguan (Hari):</label>
-          <select id="deadlineHari" class="w-full max-w-xs p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            ${hariOptions}
-          </select>
-        `);
-        $("#btnSimpan").removeClass("hidden");
-      } else if (kategori === "bulanan") {
-        const tanggalOptions = Array.from({ length: 32 }, (_, i) => {
-          const tanggal = i + 1;
-          return `<option value="${tanggal}" ${tanggal === 32 ? "selected" : ""}>${tanggal}</option>`;
-        }).join("");
+$("#btnSimpan").click(function () {
+  const jenis = $("#jenisHabit").val();
+  const kategori = $("#kategoriTugas").val();
+  const namaTugas = $("#namaTugas").val().trim();
+  const deskripsi = $("#deskripsiTugas").val().trim();
+  const prioritas = $("#prioritasTugas").val();
+  const nominalHadiah = parseInt($("#nominalHadiah").val());
 
-        $("#formInputs").html(`
-          ${commonFields}
-          <label class="block text-gray-700 mb-1 mt-3">Deadline Bulanan (Tanggal):</label>
-          <select id="deadlineTanggal" class="w-full max-w-xs p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            ${tanggalOptions}
-          </select>
-        `);
-        $("#btnSimpan").removeClass("hidden");
-      }
-    });
+  if (!jenis || !kategori || !namaTugas || !deskripsi || !prioritas || !nominalHadiah) {
+    alert("Semua field wajib diisi!");
+    return;
+  }
 
-    $("#btnSimpan").click(function() {
-      const namaTugas = $("#namaTugas").val().trim();
-      const nominalHadiah = $("#nominalHadiah").val();
-      const kategori = $("#kategoriTugas").val();
+  const newTugas = {
+    judul: namaTugas,
+    deskripsi: deskripsi,
+    prioritas: prioritas,
+    poin: nominalHadiah,
+  };
 
-      if (!namaTugas || !nominalHadiah) {
-        alert("Nama kebiasaan dan hadiah wajib diisi!");
-        return;
-      }
+  // Ambil data dari localStorage atau pakai default
+  let dataTugas = JSON.parse(localStorage.getItem("dataTugas")) || {
+    pembentukan: { harian: [], mingguan: [], bulanan: [] },
+    pemusnahan: { harian: [], mingguan: [], bulanan: [] },
+  };
 
-      let deadlineInfo = "";
-      if (kategori === "mingguan") {
-        const deadline = $("#deadlineHari").val();
-        deadlineInfo = `, Deadline: ${deadline}`;
-      } else if (kategori === "bulanan") {
-        const tanggal = $("#deadlineTanggal").val();
-        deadlineInfo = `, Deadline: Tanggal ${tanggal}`;
-      }
+  // Tambahkan ke data sesuai jenis dan kategori
+  dataTugas[jenis][kategori].push(newTugas);
 
-      $("#output").html(`
-        <strong class="text-gray-800">Tugas Ditambahkan:</strong><br>
-        <span class="text-gray-600">${namaTugas} - Rp. ${parseInt(nominalHadiah).toLocaleString()} (${kategori})${deadlineInfo}</span>
-      `);
+  // Simpan kembali ke localStorage
+  localStorage.setItem("dataTugas", JSON.stringify(dataTugas));
 
-      // Reset
-      $("#formInputs").html("").addClass("hidden");
-      $("#formContainer").addClass("hidden");
-      $("#btnSimpan").addClass("hidden");
-      $("#jenisHabit").val("");
-      $("#kategoriTugas").val("");
-      $("#kategoriGroup").addClass("hidden");
-    });
-  });
+  // Tampilkan di output (opsional)
+  $("#output").html(`
+    <strong>Tugas Ditambahkan:</strong><br>
+    <span>${newTugas.judul} - ${newTugas.prioritas}, Rp ${newTugas.poin.toLocaleString()} (${kategori})</span>
+  `);
+
+  // Reset form
+  $("#formInputs").html("").addClass("hidden");
+  $("#formContainer").addClass("hidden");
+  $("#btnSimpan").addClass("hidden");
+  $("#jenisHabit").val("");
+  $("#kategoriTugas").val("");
+  $("#kategoriGroup").addClass("hidden");
+});
+
+
+
+
+
+
 
 
 
