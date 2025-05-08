@@ -13,10 +13,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-white">
-
-
-    
-    
     <div id="formContainer" class="hidden mt-2 pt-2 px-3 bg-white rounded-lg shadow-md w-[70%] absolute z-20 inset-0 m-auto">
         <div class="flex justify-between items-center mb-2">
           <h2 class="text-lg font-semibold text-gray-800">Tambah Tugas Baru</h2>
@@ -64,14 +60,14 @@
     <header class="bg-violet-700 text-white">
         <div class="mx-3 flex justify-between items-end">
             <div class="flex items-center">
-                <div class="pembentukan flex gap-2 cursor-pointer">
+                <div id="pembentukan" class="pembentukan flex gap-2 cursor-pointer">
                     <a class="px-3 py-1 block hover:text-white bi bi-plus-circle-fill actif bg-violet-800"> 
-                        kerjaan
+                        pembentukan
                     </a>
                 </div>
-                <div class="pemusnahan flex items-center gap-2 cursor-pointer">
+                <div id="pemusnahan" class="pemusnahan flex items-center gap-2 cursor-pointer">
                     <a class="px-3 py-1 block hover:text-white hover:bg-violet-800 bi bi-dash-circle-fill "> 
-                        puasa
+                        pemusnahan
                     </a>
                 </div>
                 <button id="btnTambahTugas" class="cursor-pointer text-lg hover:bg-violet-800 block">
@@ -81,20 +77,20 @@
             <i class="bi bi-list text-2xl cursor-pointer hover:text-violet-300 transition-colors duration-300"></i>
         </div>
 
-        <nav class="bg-violet-800 pt-2">
+        <nav id="nav-repetision" class="bg-violet-800 pt-2">
             <div class="mx-3">
                 <ul class="flex justify-evenly capitalize text-sm">
-                    <a class="rounded-t-sm font-medium hover:bg-violet-50 px-4 py-1 transition duration-300  bg-white text-violet-800" href="harian">harian</a>
-                    <a class="rounded-t-sm hover:bg-violet-50 px-4 py-1 transition duration-300"  href="mingguan">mingguan</a>
-                    <a class="rounded-t-sm hover:bg-violet-50 px-4 py-1 transition duration-300"  href="bulanan">bulanan</a>
+                    <a id="harian" class="rounded-t-sm font-medium hover:bg-violet-50 px-4 py-1 transition duration-300  bg-white text-violet-800">harian</a>
+                    <a id="mingguan" class="rounded-t-sm hover:bg-violet-50 px-4 py-1 transition duration-300" >mingguan</a>
+                    <a id="bulanan" class="rounded-t-sm hover:bg-violet-50 px-4 py-1 transition duration-300" >bulanan</a>
                 </ul>
             </div>
         </nav>
     </header>
 
-    <main class="bg-violet-50 py-4">
+    <main class="bg-violet-50 py-4 ">
         <h3 class="text-lg text-center font-medium text-gray-700 mb-4">Daftar Tugas Harian</h3>
-        <div class="mx-2">
+        <div class="mx-2" id="daftar-rutinitas">
             <label for="tugas1" class="block w-full">
                 <div class="card shadow-md hover:shadow-lg transition-all duration-300 p-2 rounded-lg bg-white mb-3 border-l-4 border-violet-600 relative overflow-hidden group cursor-pointer select-none">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-violet-100 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
