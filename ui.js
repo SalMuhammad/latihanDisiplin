@@ -54,26 +54,17 @@ $("#kategoriTugas").change(function() {
 
 
 
-// -------------------------------------
-// ? Fungsi Menyimpan dan Merender Data Tugas
-// -------------------------------------
 
 $(document).ready(function () {
-  // Fungsi bantu: warna berdasarkan prioritas
   function getPriorityColorClass(prioritas) {
     switch (prioritas.toLowerCase()) {
-      case "tinggi":
-        return "bg-red-100 text-red-800";
-      case "sedang":
-        return "bg-yellow-100 text-yellow-800";
-      case "rendah":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-700";
+      case "tinggi": return "bg-red-100 text-red-800";
+      case "sedang": return "bg-yellow-100 text-yellow-800";
+      case "rendah": return "bg-green-100 text-green-800";
+      default: return "bg-gray-100 text-gray-700";
     }
   }
 
-  // Fungsi utama render berdasarkan localStorage
   function renderTugas(jenis, kategori) {
     const container = $('#daftar-rutinitas');
     container.empty();
@@ -87,7 +78,6 @@ $(document).ready(function () {
 
     tugasList.forEach((tugas, index) => {
       const priorityClass = getPriorityColorClass(tugas.prioritas);
-
       const card = `
         <label class="block w-full">
           <div class="card shadow-md hover:shadow-lg transition-all duration-300 p-2 rounded-lg bg-white mb-3 border-l-4 border-violet-600 relative overflow-hidden group cursor-pointer select-none">
@@ -95,7 +85,12 @@ $(document).ready(function () {
             <div class="flex items-center justify-between relative">
               <div class="flex items-center gap-3">
                 <div class="relative">
-                  <input type="checkbox" id="tugas${jenis}${kategori}${index}" class="peer sr-only">
+                  <input type="checkbox"
+                    class="checkbox-tugas peer sr-only"
+                    data-id="${tugas.id_tugas}"
+                    data-kategori="${kategori}"
+                    data-jenis="${jenis}">
+
                   <div class="h-6 w-6 rounded-md border-2 border-violet-600 peer-checked:bg-violet-600 peer-checked:border-violet-600 transition-all duration-300 flex items-center justify-center">
                     <i class="bi bi-check-lg text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-300"></i>
                   </div>
@@ -117,21 +112,13 @@ $(document).ready(function () {
               </div>
             </div>
           </div>
-        </label>
-      `;
-
+        </label>`;
       container.append(card);
     });
   }
 
-  // -------------------------------------
-  // ? Interaksi Halaman
-  // -------------------------------------
-
   let currentJenis = "pembentukan";
   let currentKategori = "harian";
-
-  // Render awal saat dokumen siap
   renderTugas(currentJenis, currentKategori);
 
   $('#pembentukan').on('click', function () {
@@ -155,10 +142,6 @@ $(document).ready(function () {
     renderTugas(currentJenis, currentKategori);
   });
 
-  // -------------------------------------
-  // ? Simpan ke localStorage dari Form
-  // -------------------------------------
-
   $('#btnSimpan').click(function () {
     const jenis = $('#jenisHabit').val();
     const kategori = $('#kategoriTugas').val();
@@ -172,25 +155,30 @@ $(document).ready(function () {
       return;
     }
 
-    const newTugas = {
-      judul: namaTugas,
-      deskripsi: deskripsi,
-      prioritas: prioritas,
-      poin: nominalHadiah,
-    };
-
     let dataTugas = JSON.parse(localStorage.getItem("dataTugas")) || {
       pembentukan: { harian: [], mingguan: [], bulanan: [] },
       pemusnahan: { harian: [], mingguan: [], bulanan: [] },
     };
 
+    const semuaTugas = [
+      ...dataTugas.pembentukan.harian,
+      ...dataTugas.pembentukan.mingguan,
+      ...dataTugas.pembentukan.bulanan,
+      ...dataTugas.pemusnahan.harian,
+      ...dataTugas.pemusnahan.mingguan,
+      ...dataTugas.pemusnahan.bulanan
+    ];
+
+    const newTugas = {
+      judul: namaTugas,
+      deskripsi: deskripsi,
+      prioritas: prioritas,
+      poin: nominalHadiah,
+      id_tugas: generateIdUnik(semuaTugas)
+    };
+
     dataTugas[jenis][kategori].push(newTugas);
     localStorage.setItem("dataTugas", JSON.stringify(dataTugas));
-
-    $('#output').html(`
-      <strong>Tugas Ditambahkan:</strong><br>
-      <span>${newTugas.judul} - ${newTugas.prioritas}, Rp ${newTugas.poin.toLocaleString()} (${kategori})</span>
-    `);
 
     $('#formInputs').html('').addClass('hidden');
     $('#formContainer').addClass('hidden');
@@ -199,7 +187,128 @@ $(document).ready(function () {
     $('#kategoriTugas').val("");
     $('#kategoriGroup').addClass('hidden');
 
-    // Refresh tampilan tugas setelah menambah
     renderTugas(currentJenis, currentKategori);
   });
 });
+
+$("#toggleSettings").click(function () {
+  $("#pengaturanPanel").toggleClass("translate-x-full");
+});
+
+function renderPengaturanTugas() {
+  const container = document.getElementById("daftarPengaturanTugas");
+  container.innerHTML = "";
+  const data = JSON.parse(localStorage.getItem("dataTugas")) || {
+    pembentukan: { harian: [], mingguan: [], bulanan: [] },
+    pemusnahan: { harian: [], mingguan: [], bulanan: [] },
+  };
+
+  Object.entries(data).forEach(([jenis, kategoriObj]) => {
+    Object.entries(kategoriObj).forEach(([kategori, tugasList]) => {
+      tugasList.forEach((tugas, index) => {
+        const elemen = document.createElement("div");
+        elemen.className = "flex justify-between items-center p-1 bg-violet-50 rounded shadow-sm";
+        elemen.innerHTML = `
+          <div>
+            <p class="text-sm font-medium text-gray-800">${tugas.judul} ${jenis} - ${kategori}</p>
+            <p class="text-xs text-gray-500"></p>
+          </div>
+          <div class="flex gap-2">
+            <button class="edit-btn text-blue-600 text-sm" data-jenis="${jenis}" data-kategori="${kategori}" data-index="${index}">Edit</button>
+            <button class="delete-btn text-red-600 text-sm" data-jenis="${jenis}" data-kategori="${kategori}" data-index="${index}">Hapus</button>
+          </div>`;
+        container.appendChild(elemen);
+      });
+    });
+  });
+}
+
+document.getElementById("daftarPengaturanTugas").addEventListener("click", function (e) {
+  if (e.target.classList.contains("delete-btn")) {
+    const jenis = e.target.dataset.jenis;
+    const kategori = e.target.dataset.kategori;
+    const index = parseInt(e.target.dataset.index);
+    const data = JSON.parse(localStorage.getItem("dataTugas"));
+    data[jenis][kategori].splice(index, 1);
+    localStorage.setItem("dataTugas", JSON.stringify(data));
+    renderPengaturanTugas();
+  } else if (e.target.classList.contains("edit-btn")) {
+    alert("Fitur edit akan ditambahkan nanti.");
+  }
+});
+
+renderPengaturanTugas();
+
+function generateIdUnik(dataTugas) {
+  const karakter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+  let id;
+  do {
+    id = "";
+    for (let i = 0; i < 4; i++) {
+      id += karakter.charAt(Math.floor(Math.random() * karakter.length));
+    }
+  } while (dataTugas.some(tugas => tugas.id_tugas === id));
+  return id;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$(document).on('change', '.checkbox-tugas', function () {
+  const isChecked = $(this).is(':checked');
+  const idTugas = $(this).data('id'); // pastikan saat generate checkbox kamu kasih data-id
+  const kategori = $(this).data('kategori'); // harian/mingguan/bulanan
+  const jenis = $(this).data('jenis'); // pembentukan/pemusnahan
+
+  // Ambil data tugas dari localStorage
+  const semuaTugas = JSON.parse(localStorage.getItem('dataTugas')) || {
+      pembentukan: { harian: [], mingguan: [], bulanan: [] },
+      pemusnahan: { harian: [], mingguan: [], bulanan: [] }
+  };
+
+  // Ambil atau inisialisasi pendingCash
+  let pendingCash = JSON.parse(localStorage.getItem('pendingCash')) || [];
+
+  // Cari tugas berdasarkan id, kategori dan jenis
+  const daftar = semuaTugas[jenis][kategori];
+  const tugas = daftar.find(t => t.id_tugas === idTugas);
+
+  if (!tugas) return;
+
+  if (isChecked) {
+      // Tambahkan ke pendingCash
+      pendingCash.push({
+          id_tugas: tugas.id_tugas,
+          judul: tugas.judul,
+          nominal: tugas.poin,
+          kategori: kategori,
+          jenis: jenis,
+          waktuTambah: new Date().toISOString()
+      });
+  } else {
+      // Hapus dari pendingCash jika di-uncheck
+      pendingCash = pendingCash.filter(u => u.id_tugas !== idTugas);
+  }
+
+  // Simpan ulang ke localStorage
+  localStorage.setItem('pendingCash', JSON.stringify(pendingCash));
+});
+
+
+
+
+
+
+
+
+
