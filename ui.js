@@ -1,9 +1,7 @@
-const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
 
 $("#btnTambahTugas").click(function () {
   $("#formContainer").show();
-
   // Set default value
   $("#jenisHabit").val("pembentukan");
   $("#kategoriGroup").show();
@@ -14,6 +12,7 @@ $("#btnTambahTugas").click(function () {
   $("#btnSimpan").show();
 });
 
+// tutup form input
 $("#btnClose").click(function () {
   $("#formContainer").hide();
   $("#formInputs").hide().html("");
@@ -30,12 +29,12 @@ $("#kategoriTugas").change(function () {
   $("#btnSimpan").show();
 });
 
+
 // Jika user ganti jenisHabit, kosongkan kategori & formInputs
 $("#jenisHabit").change(function () {
   $("#kategoriGroup").show();
   $("#kategoriTugas").val("harian").trigger("change");
 });
-
 
 // Satu-satunya handler kategoriTugas yang benar
 $("#kategoriTugas").change(function () {
@@ -45,6 +44,8 @@ $("#kategoriTugas").change(function () {
 });
 
 
+
+const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 function renderFormInputs(kategori) {
   const commonFields = `
     <input type="text" id="namaTugas" placeholder="Nama Kebiasaan" style="width: 100%; padding: 6px; margin-bottom: 8px;" />
@@ -352,6 +353,6 @@ $(document).on('change', '.checkbox-tugas', function () {
   } else {
     pendingCash = pendingCash.filter(u => u.id_tugas !== idTugas);
   }
-
   localStorage.setItem('pendingCash', JSON.stringify(pendingCash));
 });
+

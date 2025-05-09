@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belajar React - Pendekatan Kinestetik</title>
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel untuk JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .counter {
+            font-size: 2em;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .reset-btn {
+            background-color: #f44336;
+        }
+        .reset-btn:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Komponen Counter sederhana
+        function Counter() {
+            // State untuk menyimpan nilai counter
+            const [count, setCount] = React.useState(0);
+
+            // Fungsi untuk menambah nilai
+            const increment = () => {
+                setCount(count + 1);
+            };
+
+            // Fungsi untuk mengurangi nilai
+            const decrement = () => {
+                setCount(count - 1);
+            };
+
+            // Fungsi untuk reset nilai
+            const reset = () => {
+                setCount(0);
+            };
+
+            // Menentukan warna berdasarkan nilai
+            const getCounterColor = () => {
+                if (count > 0) return '#e8f5e9'; // Hijau muda
+                if (count < 0) return '#ffebee'; // Merah muda
+                return '#f5f5f5'; // Abu-abu
+            };
+
+            return (
+                <div className="container">
+                    <h1>Belajar React - Counter Sederhana</h1>
+                    <div className="counter" style={{ backgroundColor: getCounterColor() }}>
+                        Nilai: {count}
+                    </div>
+                    <div>
+                        <button onClick={decrement}>-</button>
+                        <button onClick={increment}>+</button>
+                        <button className="reset-btn" onClick={reset}>Reset</button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render komponen ke DOM
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Counter />);
+    </script>
+</body>
+</html> 
