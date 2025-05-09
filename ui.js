@@ -1,10 +1,20 @@
 const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
-$("#btnTambahTugas").click(function() {
+
+$("#btnTambahTugas").click(function () {
   $("#formContainer").show();
+
+  // Set default value
+  $("#jenisHabit").val("pembentukan");
+  $("#kategoriGroup").show();
+  $("#kategoriTugas").val("harian");
+
+  // Langsung render form default (harian)
+  renderFormInputs("harian");
+  $("#btnSimpan").show();
 });
 
-$("#btnClose").click(function() {
+$("#btnClose").click(function () {
   $("#formContainer").hide();
   $("#formInputs").hide().html("");
   $("#btnSimpan").hide();
@@ -13,56 +23,59 @@ $("#btnClose").click(function() {
   $("#kategoriGroup").hide();
 });
 
-$("#jenisHabit").change(function() {
-  $("#kategoriGroup").show();
-  $("#kategoriTugas").val("");
-  $("#formInputs").hide().html("");
-  $("#btnSimpan").hide();
+// Jika user ganti kategori
+$("#kategoriTugas").change(function () {
+  const kategori = $(this).val();
+  renderFormInputs(kategori);
+  $("#btnSimpan").show();
 });
 
-$("#kategoriTugas").change(function() {
+// Jika user ganti jenisHabit, kosongkan kategori & formInputs
+$("#jenisHabit").change(function () {
+  $("#kategoriGroup").show();
+  $("#kategoriTugas").val("harian").trigger("change");
+});
+
+
+// Satu-satunya handler kategoriTugas yang benar
+$("#kategoriTugas").change(function () {
   const kategori = $(this).val();
-  let html = "";
+  renderFormInputs(kategori);
+  $("#btnSimpan").show();
+});
+
+
+function renderFormInputs(kategori) {
   const commonFields = `
     <input type="text" id="namaTugas" placeholder="Nama Kebiasaan" style="width: 100%; padding: 6px; margin-bottom: 8px;" />
     <textarea id="deskripsiTugas" placeholder="Deskripsi" style="width: 100%; padding: 6px; margin-bottom: 8px;"></textarea>
     <select id="prioritasTugas" style="width: 100%; padding: 6px; margin-bottom: 8px;">
-      <option value="">-- Prioritas --</option>
       <option value="Tinggi">Tinggi</option>
-      <option value="Sedang">Sedang</option>
+      <option value="Sedang" selected>Sedang</option>
       <option value="Rendah">Rendah</option>
     </select>
     <input type="number" id="nominalHadiah" min="0" placeholder="Nominal Hadiah (Rp)" style="width: 100%; padding: 6px; margin-bottom: 8px;" />
   `;
 
-  if (kategori === "harian") {
-    html = commonFields;
-  } else if (kategori === "mingguan") {
-    const hariOptions = hariList.map(day => `<option value="${day.toLowerCase()}" ${day === 'Sabtu' ? 'selected' : ''}>${day}</option>`).join("");
-    html = `${commonFields}<select id="deadlineHari" style="width: 100%; padding: 6px; margin-bottom: 8px;">${hariOptions}</select>`;
+  let extraField = "";
+  if (kategori === "mingguan") {
+    const hariOptions = hariList.map(day => 
+      `<option value="${day.toLowerCase()}" ${day === 'Sabtu' ? 'selected' : ''}>${day}</option>`
+    ).join("");
+    extraField = `<select id="deadlineHari" style="width: 100%; padding: 6px; margin-bottom: 8px;">${hariOptions}</select>`;
   } else if (kategori === "bulanan") {
-    // const tanggalOptions = Array.from({ length: 32 }, (_, i) => i + 1).map(tgl => `<option value="${tgl}" ${tgl === 32 ? "selected" : ""}>${tgl}</option>`).join("");
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth(); // 0 = Jan, 11 = Des
-
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth(); // 0-based index
-    const lastDay = new Date(year, month + 1, 0).getDate(); // Dapatkan jumlah hari di bulan aktif
-
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const tanggalOptions = Array.from({ length: lastDay }, (_, i) => i + 1)
       .map(tgl => `<option value="${tgl}" ${tgl === lastDay ? "selected" : ""}>${tgl}</option>`)
       .join("");
-
-
-    html = `${commonFields}<select id="deadlineTanggal" style="width: 100%; padding: 6px; margin-bottom: 8px;">${tanggalOptions}</select>`;
+    extraField = `<select id="deadlineTanggal" style="width: 100%; padding: 6px; margin-bottom: 8px;">${tanggalOptions}</select>`;
   }
 
-  $("#formInputs").html(html).show();
-  $("#btnSimpan").show();
-});
+  $("#formInputs").html(commonFields + extraField).show();
+}
+
+
 
 $(document).ready(function () {
   function getPriorityColorClass(prioritas) {
@@ -157,7 +170,7 @@ $(document).ready(function () {
 
 
 
-  
+
   // ===============================
   // ? saat tombol simpan di klik
   // ===============================
@@ -230,8 +243,8 @@ $(document).ready(function () {
     $('#jenisHabit').val("");
     $('#kategoriTugas').val("");
     $('#kategoriGroup').addClass('hidden');
-
     renderTugas(currentJenis, currentKategori);
+    $('#formContainer').addClass('hidden')
   });
 });
 
@@ -308,9 +321,9 @@ function generateIdUnik(dataTugas) {
 
 
 
-// =====================================================================
-// ?--------bagian masukan tugas ke daftar pending saat di checklis
-// ======================================================================
+// ============================================================
+// ?-bagian masukan tugas ke daftar pending saat di checklis
+// ============================================================
 $(document).on('change', '.checkbox-tugas', function () {
   const isChecked = $(this).is(':checked');
   const idTugas = $(this).data('id');

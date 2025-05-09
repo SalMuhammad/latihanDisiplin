@@ -1,0 +1,1 @@
+- kalo tugas dihapus dan sudah dicentang dan tersimpan ke daftar pending,  maka hapus juga di daftar pendingnya
