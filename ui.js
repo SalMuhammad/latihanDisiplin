@@ -46,6 +46,8 @@ $("#kategoriTugas").change(function () {
 
 
 const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const bulanList = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
 function renderFormInputs(kategori) {
   const commonFields = `
     <input type="text" id="namaTugas" placeholder="Nama Kebiasaan" style="width: 100%; padding: 6px; margin-bottom: 8px;" />
@@ -59,22 +61,67 @@ function renderFormInputs(kategori) {
   `;
 
   let extraField = "";
+
   if (kategori === "mingguan") {
-    const hariOptions = hariList.map(day => 
-      `<option value="${day.toLowerCase()}" ${day === 'Sabtu' ? 'selected' : ''}>${day}</option>`
+    const hariMulai = new Date(); // hari ini
+    const opsiHari = [];
+
+    for (let i = 1; i <= 7; i++) {
+      const nextDay = new Date(hariMulai);
+      nextDay.setDate(hariMulai.getDate() + i);
+      const hari = hariList[nextDay.getDay()];
+      opsiHari.push({
+        nama: hari,
+        isDefault: hari === "Sabtu"
+      });
+    }
+
+    const hariOptions = opsiHari.map(opt =>
+      `<option value="${opt.nama.toLowerCase()}" ${opt.isDefault ? "selected" : ""}>${opt.nama}</option>`
     ).join("");
+
     extraField = `<select id="deadlineHari" style="width: 100%; padding: 6px; margin-bottom: 8px;">${hariOptions}</select>`;
-  } else if (kategori === "bulanan") {
-    const now = new Date();
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const tanggalOptions = Array.from({ length: lastDay }, (_, i) => i + 1)
-      .map(tgl => `<option value="${tgl}" ${tgl === lastDay ? "selected" : ""}>${tgl}</option>`)
-      .join("");
-    extraField = `<select id="deadlineTanggal" style="width: 100%; padding: 6px; margin-bottom: 8px;">${tanggalOptions}</select>`;
   }
+
+  else if (kategori === "bulanan") {
+    const today = new Date();
+    const tanggalOptions = [];
+  
+    // Ambil tahun dan bulan sekarang
+    const tahun = today.getFullYear();
+    const bulan = today.getMonth(); // 0-based
+  
+    // Ambil tanggal terakhir bulan ini
+    const lastDateOfMonth = new Date(tahun, bulan + 1, 0); // otomatis dapat tanggal terakhir
+    const lastDay = lastDateOfMonth.getDate();
+    const lastDayStr = lastDateOfMonth.toISOString().split("T")[0];
+  
+    // Loop dari tanggal 1 sampai tanggal terakhir bulan ini
+    for (let tgl = 1; tgl <= lastDay; tgl++) {
+      const thisDate = new Date(tahun, bulan, tgl);
+      const tanggalStr = thisDate.toISOString().split("T")[0];
+      const label = `${tgl} ${bulanList[bulan]} ${tahun}`;
+  
+      tanggalOptions.push({
+        value: tanggalStr,
+        label,
+        isDefault: tanggalStr === lastDayStr
+      });
+    }
+  
+    const optionTags = tanggalOptions.map(opt =>
+      `<option value="${opt.value}" ${opt.isDefault ? "selected" : ""}>${opt.label}</option>`
+    ).join("");
+  
+    extraField = `<select id="deadlineTanggal" style="width: 100%; padding: 6px; margin-bottom: 8px;">${optionTags}</select>`;
+  }
+  
+  
 
   $("#formInputs").html(commonFields + extraField).show();
 }
+
+
 
 
 
@@ -182,36 +229,61 @@ $(document).ready(function () {
     const deskripsi = $('#deskripsiTugas').val().trim();
     const prioritas = $('#prioritasTugas').val();
     const nominalHadiah = parseInt($('#nominalHadiah').val());
-
-    let deadlineHari = "";
-    let deadlineTanggal = "";
-
-    if (kategori === "mingguan") {
-      deadlineHari = $('#deadlineHari').val().trim();
-      if (!deadlineHari) {
-        alert('Hari deadline wajib diisi untuk tugas mingguan!');
-        return;
-      }
-    }
-
-    if (kategori === "bulanan") {
-      deadlineTanggal = $('#deadlineTanggal').val().trim();
-      if (!deadlineTanggal) {
-        alert('Tanggal deadline wajib diisi untuk tugas bulanan!');
-        return;
-      }
-    }
-
-    if (!jenis || !kategori || !namaTugas || !deskripsi || !prioritas || isNaN(nominalHadiah)) {
+  
+    if (!jenis || !kategori || !namaTugas || !prioritas || isNaN(nominalHadiah)) {
       alert('Semua field wajib diisi!');
       return;
     }
-
+  
+    let deadlineHari = "";
+    let deadlineTanggal = "";
+    let deadlineBulan = "";
+    let deadlineTahun = "";
+  
+    const now = new Date();
+  
+    if (kategori === "mingguan") {
+      const hariNama = $('#deadlineHari').val().trim(); // misal: "jumat"
+      if (!hariNama) {
+        alert('Hari deadline wajib diisi untuk tugas mingguan!');
+        return;
+      }
+  
+      const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      const indexTarget = hariList.findIndex(h => h.toLowerCase() === hariNama.toLowerCase());
+      const hariIni = now.getDay();
+  
+      let selisihHari = indexTarget - hariIni;
+      if (selisihHari <= 0) selisihHari += 7;
+  
+      const deadlineDate = new Date(now);
+      deadlineDate.setDate(now.getDate() + selisihHari);
+  
+      deadlineHari = deadlineDate.getDate();
+      deadlineBulan = deadlineDate.getMonth() + 1; // ✅ jangan lupa +1
+      deadlineTahun = deadlineDate.getFullYear();
+    }
+  
+    if (kategori === "bulanan") {
+      const deadlineInput = $('#deadlineTanggal').val();
+      
+      if (!deadlineInput) {
+        alert('Tanggal deadline wajib diisi untuk tugas bulanan!');
+        return;
+      }
+      
+      const deadlineDate = new Date(deadlineInput);
+      deadlineTanggal = deadlineDate.getDate() + 1;
+      deadlineBulan = deadlineDate.getMonth() + 1; // ✅ Fix bulan offset
+      console.log(deadlineTanggal);
+      deadlineTahun = deadlineDate.getFullYear();
+    }
+  
     let dataTugas = JSON.parse(localStorage.getItem("dataTugas")) || {
       pembentukan: { harian: [], mingguan: [], bulanan: [] },
       pemusnahan: { harian: [], mingguan: [], bulanan: [] },
     };
-
+  
     const semuaTugas = [
       ...dataTugas.pembentukan.harian,
       ...dataTugas.pembentukan.mingguan,
@@ -220,33 +292,46 @@ $(document).ready(function () {
       ...dataTugas.pemusnahan.mingguan,
       ...dataTugas.pemusnahan.bulanan
     ];
-
+  
     const newTugas = {
       judul: namaTugas,
       deskripsi: deskripsi,
       prioritas: prioritas,
       poin: nominalHadiah,
-      id_tugas: generateIdUnik(semuaTugas)
+      id_tugas: generateIdUnik(semuaTugas),
     };
-
+  
     if (kategori === "mingguan") {
       newTugas.deadlineHari = deadlineHari;
-    } else if (kategori === "bulanan") {
-      newTugas.deadlineTanggal = deadlineTanggal;
+      newTugas.deadlineBulan = deadlineBulan;
+      newTugas.deadlineTahun = deadlineTahun;
     }
-
+  
+    if (kategori === "bulanan") {
+      newTugas.deadlineTanggal = deadlineTanggal;
+      newTugas.deadlineBulan = deadlineBulan;
+      newTugas.deadlineTahun = deadlineTahun;
+    }
+  
     dataTugas[jenis][kategori].push(newTugas);
     localStorage.setItem("dataTugas", JSON.stringify(dataTugas));
-
+  
+    // reset form
     $('#formInputs').html('').addClass('hidden');
     $('#formContainer').addClass('hidden');
     $('#btnSimpan').addClass('hidden');
     $('#jenisHabit').val("");
     $('#kategoriTugas').val("");
     $('#kategoriGroup').addClass('hidden');
-    renderTugas(currentJenis, currentKategori);
-    $('#formContainer').addClass('hidden')
+  
+    renderTugas(jenis, kategori);
   });
+  
+
+  
+
+
+  
 });
 
 $("#toggleSettings").click(function () {
@@ -323,7 +408,7 @@ function generateIdUnik(dataTugas) {
 
 
 // ============================================================
-// ?-bagian masukan tugas ke daftar pending saat di checklis
+// ✅ Bagian masukan tugas ke daftar pending saat di checklis
 // ============================================================
 $(document).on('change', '.checkbox-tugas', function () {
   const isChecked = $(this).is(':checked');
@@ -341,18 +426,128 @@ $(document).on('change', '.checkbox-tugas', function () {
   const tugas = daftar.find(t => t.id_tugas === idTugas);
 
   if (!tugas) return;
+
   if (isChecked) {
-    pendingCash.push({
+    const dataTugasBaru = {
       id_tugas: tugas.id_tugas,
       judul: tugas.judul,
       nominal: tugas.poin,
       kategori: kategori,
       jenis: jenis,
       waktuTambah: new Date().toISOString()
-    });
+    };
+
+    // Tambahkan semua field deadline jika tersedia
+    if (kategori === "mingguan") {
+      if (tugas.deadlineHari !== undefined) dataTugasBaru.deadlineHari = tugas.deadlineHari;
+      if (tugas.deadlineBulan !== undefined) dataTugasBaru.deadlineBulan = tugas.deadlineBulan;
+      if (tugas.deadlineTahun !== undefined) dataTugasBaru.deadlineTahun = tugas.deadlineTahun;
+    }
+
+    if (kategori === "bulanan") {
+      if (tugas.deadlineTanggal !== undefined) dataTugasBaru.deadlineTanggal = tugas.deadlineTanggal;
+      if (tugas.deadlineBulan !== undefined) dataTugasBaru.deadlineBulan = tugas.deadlineBulan;
+      if (tugas.deadlineTahun !== undefined) dataTugasBaru.deadlineTahun = tugas.deadlineTahun;
+    }
+
+    pendingCash.push(dataTugasBaru);
   } else {
     pendingCash = pendingCash.filter(u => u.id_tugas !== idTugas);
   }
+
   localStorage.setItem('pendingCash', JSON.stringify(pendingCash));
 });
+
+
+
+
+
+
+
+
+function cekDanPindahOtomatis() {
+  const pendingCash = JSON.parse(localStorage.getItem("pendingCash")) || [];
+  const akun = JSON.parse(localStorage.getItem("akun")) || { saldo: 0 };
+
+  const now = new Date();
+  const hariIni = now.toLocaleDateString('id-ID', { weekday: 'long' });
+  const tanggalHariIni = now.getDate();
+  const bulanIni = now.getMonth() + 1;   
+  // const tahunIni = now.getFullYear();
+  const tahunIni = 2026
+
+
+  const sisaTugas = [];
+
+  pendingCash.forEach(tugas => {
+    const waktuTambah = new Date(tugas.waktuTambah);
+    const tanggalTugas = waktuTambah.getDate(); // hanya untuk harian
+
+    let pindahkan = false;
+
+    // ✅ HARIAN: Pindah keesokan harinya
+    if (tugas.kategori === "harian" && tanggalHariIni > tanggalTugas) {
+      pindahkan = true;
+    }
+
+    // ✅ MINGGUAN: deadlineHari & bandingkan juga tahun/bulan
+    if (
+      tugas.kategori === "mingguan" &&
+      (
+        tahunIni > (tugas.deadlineTahun || tahunIni) ||
+        bulanIni > (tugas.deadlineBulan || bulanIni) ||
+        tanggalHariIni > (tugas.deadlineHari || tanggalHariIni)
+      )
+    ) {
+      pindahkan = true;
+    }
+
+
+    // ✅ BULANAN: deadlineTanggal + bulan + tahun 
+
+    // misalkan deadlineTanggal nya 28 januwanri, sementara user membuka aplikasinya tanggal 2
+    if (
+      tugas.kategori === "bulanan" &&
+      (
+        tahunIni > (tugas.deadlineTahun || tahunIni) ||
+        bulanIni > (tugas.deadlineBulan || bulanIni) ||
+        tanggalHariIni >= (tugas.deadlineTanggal || tanggalHariIni + 1)
+      )
+    ) {
+      pindahkan = true;
+    }
+
+    if (pindahkan) {
+      akun.saldo += tugas.nominal;
+
+      // Uncheck checkbox di halaman (jika ada)
+      const checkbox = document.querySelector(`input[type="checkbox"][data-id="${tugas.id_tugas}"]`);
+      if (checkbox) checkbox.checked = false;
+    } else {
+      sisaTugas.push(tugas);
+    }
+
+   
+    
+  });
+
+  localStorage.setItem("pendingCash", JSON.stringify(sisaTugas));
+  localStorage.setItem("akun", JSON.stringify(akun));
+
+  
+}
+
+window.addEventListener("load", cekDanPindahOtomatis);
+
+
+
+
+
+
+
+
+
+
+
+
 
