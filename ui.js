@@ -1,3 +1,47 @@
+function toggleAccordion(id) {
+  const content = document.getElementById(id);
+  const icon = document.getElementById('icon-' + id);
+  const isOpen = !content.classList.contains("hidden");
+
+  content.classList.toggle("hidden");
+
+  // Rotasi ikon
+  if (isOpen) {
+    icon.classList.remove("rotate-180");
+  } else {
+    icon.classList.add("rotate-180");
+  }
+}
+
+function tampilkanSaldo() {
+  const saldo = parseInt(localStorage.getItem("saldoAkun")) || 0;
+  document.getElementById("saldoSekarang").textContent = "Rp " + saldo.toLocaleString("id-ID");
+}
+
+function withdrawSaldo() {
+  let saldo = parseInt(localStorage.getItem("saldoAkun")) || 0;
+
+  if (saldo <= 0) {
+    document.getElementById("withdrawStatus").textContent = "⚠️ Saldo kosong.";
+    return;
+  }
+
+  let histori = JSON.parse(localStorage.getItem("withdrawHistory")) || [];
+  histori.push({
+    nominal: saldo,
+    waktu: new Date().toISOString()
+  });
+  localStorage.setItem("withdrawHistory", JSON.stringify(histori));
+
+  localStorage.setItem("saldoAkun", "0");
+  tampilkanSaldo();
+  document.getElementById("withdrawStatus").textContent = `✅ Berhasil tarik Rp ${saldo.toLocaleString("id-ID")}`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  tampilkanSaldo();
+  document.getElementById("btnWithdraw").addEventListener("click", withdrawSaldo);
+});
 
 
 $("#btnTambahTugas").click(function () {
@@ -315,6 +359,42 @@ $(document).ready(function () {
   
     dataTugas[jenis][kategori].push(newTugas);
     localStorage.setItem("dataTugas", JSON.stringify(dataTugas));
+
+    // Jika jenis habit adalah PEMUSNAHAN, langsung masukkan ke pendingCash
+    if (jenis === "pemusnahan") {
+      let pendingCash = JSON.parse(localStorage.getItem("pendingCash")) || [];
+    
+      // Hindari duplikat
+      const sudahAda = pendingCash.some(p => p.id_tugas === newTugas.id_tugas);
+      if (!sudahAda) {
+        const dataTugasBaru = {
+          judul: newTugas.judul,
+          id_tugas: newTugas.id_tugas,
+          nominal: newTugas.poin,
+          kategori: kategori,
+          jenis: jenis,
+          waktuTambah: new Date().toISOString()
+        };
+    
+        // Tambahkan deadline sesuai kategori
+        if (kategori === "mingguan") {
+          if (newTugas.deadlineHari !== undefined) dataTugasBaru.deadlineHari = newTugas.deadlineHari;
+          if (newTugas.deadlineBulan !== undefined) dataTugasBaru.deadlineBulan = newTugas.deadlineBulan;
+          if (newTugas.deadlineTahun !== undefined) dataTugasBaru.deadlineTahun = newTugas.deadlineTahun;
+        }
+    
+        if (kategori === "bulanan") {
+          if (newTugas.deadlineTanggal !== undefined) dataTugasBaru.deadlineTanggal = newTugas.deadlineTanggal;
+          if (newTugas.deadlineBulan !== undefined) dataTugasBaru.deadlineBulan = newTugas.deadlineBulan;
+          if (newTugas.deadlineTahun !== undefined) dataTugasBaru.deadlineTahun = newTugas.deadlineTahun;
+        }
+    
+        pendingCash.push(dataTugasBaru);
+        localStorage.setItem("pendingCash", JSON.stringify(pendingCash));
+      }
+    }
+    
+
   
     // reset form
     $('#formInputs').html('').addClass('hidden');
@@ -462,8 +542,9 @@ $(document).on('change', '.checkbox-tugas', function () {
 
 
 
-
-
+// ==============================================
+// ? bagian pindahkan dari pendingCash ke saldo
+// ==============================================
 
 function cekDanPindahOtomatis() {
   const pendingCash = JSON.parse(localStorage.getItem("pendingCash")) || [];
@@ -472,10 +553,8 @@ function cekDanPindahOtomatis() {
   const now = new Date();
   const hariIni = now.toLocaleDateString('id-ID', { weekday: 'long' });
   const tanggalHariIni = now.getDate();
-  const bulanIni = now.getMonth() + 1;   
-  // const tahunIni = now.getFullYear();
-  const tahunIni = 2026
-
+  const bulanIni = now.getMonth() + 2;   
+  const tahunIni = now.getFullYear() ;
 
   const sisaTugas = [];
 

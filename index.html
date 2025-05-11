@@ -90,6 +90,33 @@
 
 
             <div id="pengaturanPanel" class="fixed top-16 right-0 w-80 h-[calc(100vh-4rem)] bg-white p-4 rounded-l-lg shadow-lg border-l border-violet-300 transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+                <div class="w-full max-w-md mx-auto mb-6">
+                    <div class="border rounded-2xl shadow-sm overflow-hidden">
+                      <button 
+                        type="button" 
+                        class="w-full flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 text-left text-sm font-medium text-gray-900"
+                        onclick="toggleAccordion('accordion-saldo')"
+                      >
+                        💰 Pengaturan Saldo
+                        <svg id="icon-accordion-saldo" class="w-4 h-4 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      <div id="accordion-saldo" class="px-4 py-3 hidden bg-white">
+                        <p class="mb-2 text-sm">Saldo Sekarang:</p>
+                        <h3 class="text-lg font-semibold text-green-600 mb-3" id="saldoSekarang">Rp 0</h3>
+                        <button 
+                          id="btnWithdraw" 
+                          class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm"
+                        >
+                          Withdraw Saldo
+                        </button>
+                        <div id="withdrawStatus" class="mt-3 text-sm text-gray-700"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                
                 <h2 class="text-lg font-semibold text-violet-700 mb-3">Pengaturan Tugas</h2>
                 <div id="daftarPengaturanTugas" class="space-y-3">
                   <!-- Daftar tugas akan diisi via JavaScript -->
@@ -175,3 +202,4 @@
     <script src="ui.js"></script>
 </body>
 </html>
+
