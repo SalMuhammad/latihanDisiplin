@@ -234,7 +234,7 @@ $(document).ready(function () {
     tugasList.forEach((tugas, index) => {
       const priorityClass = getPriorityColorClass(tugas.prioritas);
       const isChecked = pendingCash.some(p => p.id_tugas === tugas.id_tugas);
-      const card = `
+      const card = /*html*/ `
         <label class="block w-full">
           <div class="card shadow-md hover:shadow-lg transition-all duration-300 p-2 rounded-lg bg-white mb-3 border-l-4 border-violet-600 relative overflow-hidden group cursor-pointer select-none">
             <div class="absolute top-0 right-0 w-32 h-32 bg-violet-100 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
