@@ -74,6 +74,7 @@ function renderFormInputs(kategori) {
     <input type="number" id="nominalHadiah" min="0" placeholder="Nominal Hadiah (Rp)" style="width: 100%; padding: 6px; margin-bottom: 8px;" />
   `;
 
+
   let extraField = "";
 
   if (kategori === "mingguan") {
@@ -225,7 +226,6 @@ $(document).ready(function () {
       const semuaBulanan = [...dataTugas.pembentukan.bulanan, ...dataTugas.pemusnahan.bulanan];
     
       const totalHarianPerHari = hitungTotal(semuaHarian);
-      console.log(hitungTotal(semuaHarian))
       const totalMingguanPerMinggu = hitungTotal(semuaMingguan);
       const totalBulananPerBulan = hitungTotal(semuaBulanan);
     
@@ -658,9 +658,7 @@ function cekDanPindahOtomatis() {
     const waktuTambah = new Date(tugas.waktuTambah);
     const tanggalTugas = waktuTambah.getDate(); // hanya untuk harian
 
-    let pindahkan = false;
-
- 
+    let pindahkan = false
 
     // ✅ HARIAN: Pindah keesokan harinya
     if (tugas.kategori === "harian" && tanggalHariIni > tanggalTugas) {
