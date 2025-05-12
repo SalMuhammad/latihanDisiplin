@@ -13,36 +13,6 @@ function toggleAccordion(id) {
   }
 }
 
-function tampilkanSaldo() {
-  const saldo = parseInt(localStorage.getItem("saldoAkun")) || 0;
-  document.getElementById("saldoSekarang").textContent = "Rp " + saldo.toLocaleString("id-ID");
-}
-
-function withdrawSaldo() {
-  let saldo = parseInt(localStorage.getItem("saldoAkun")) || 0;
-
-  if (saldo <= 0) {
-    document.getElementById("withdrawStatus").textContent = "⚠️ Saldo kosong.";
-    return;
-  }
-
-  let histori = JSON.parse(localStorage.getItem("withdrawHistory")) || [];
-  histori.push({
-    nominal: saldo,
-    waktu: new Date().toISOString()
-  });
-  localStorage.setItem("withdrawHistory", JSON.stringify(histori));
-
-  localStorage.setItem("saldoAkun", "0");
-  tampilkanSaldo();
-  document.getElementById("withdrawStatus").textContent = `✅ Berhasil tarik Rp ${saldo.toLocaleString("id-ID")}`;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  tampilkanSaldo();
-  document.getElementById("btnWithdraw").addEventListener("click", withdrawSaldo);
-});
-
 
 $("#btnTambahTugas").click(function () {
   $("#formContainer").show();
@@ -170,6 +140,76 @@ function renderFormInputs(kategori) {
 
 
 $(document).ready(function () {
+
+  const akun = JSON.parse(localStorage.getItem("akun")) || { saldo: 0 };
+  $("#saldoSekarang").text(`Rp ${akun.saldo.toLocaleString("id-ID")}`);
+
+
+
+
+
+
+
+
+
+    // Tampilkan saldo
+    function tampilkanSaldo() {
+      const akun = JSON.parse(localStorage.getItem("akun")) || { saldo: 0 };
+      $("#saldoSekarang").text(`Rp ${akun.saldo.toLocaleString("id-ID")}`);
+    }
+  
+    tampilkanSaldo();
+  
+    // Klik tombol "Tarik Uang" untuk menampilkan input withdraw
+    $("#btnWithdraw").click(function () {
+      $("#formWithdraw").classList.remove()('hidden'); // toggle muncul/sembunyi
+    });
+  
+    // Konfirmasi penarikan
+    $("#konfirmasiWithdraw").click(function () {
+      const akun = JSON.parse(localStorage.getItem("akun")) || { saldo: 0 };
+      const nominal = parseInt($("#inputWithdraw").val());
+  
+      if (isNaN(nominal) || nominal <= 0) {
+        alert("Masukkan nominal yang valid.");
+        return;
+      }
+  
+      if (nominal > akun.saldo) {
+        alert("Saldo tidak mencukupi.");
+        return;
+      }
+  
+      const konfirmasi = confirm(`Yakin ingin menarik Rp ${nominal.toLocaleString("id-ID")} ?`);
+      if (konfirmasi) {
+        akun.saldo -= nominal;
+        localStorage.setItem("akun", JSON.stringify(akun));
+        tampilkanSaldo();
+        alert("Penarikan berhasil!");
+        $("#inputWithdraw").val("");
+        $("#formWithdraw").slideUp(); // sembunyikan lagi
+      }
+    });
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   function getPriorityColorClass(prioritas) {
     switch (prioritas.toLowerCase()) {
       case "tinggi": return "bg-red-100 text-red-800";
@@ -568,6 +608,8 @@ function cekDanPindahOtomatis() {
 
     let pindahkan = false;
 
+ 
+
     // ✅ HARIAN: Pindah keesokan harinya
     if (tugas.kategori === "harian" && tanggalHariIni > tanggalTugas) {
       pindahkan = true;
@@ -601,6 +643,7 @@ function cekDanPindahOtomatis() {
     }
 
     if (pindahkan) {
+
       
       // Uncheck checkbox di halaman (jika ada)
       
@@ -654,13 +697,8 @@ function tambahkanPemusnahanYangBelumMasuk() {
 
     let waktunyaMasuk = false;
 
-    // if (tugas.kategori === "harian") {
-    //   waktunyaMasuk = true; // masuk setiap hari
-    // }
-    // console.log(tanggalHariIni);
-    // console.log(tanggalTugas);
 
-    if (tugas.kategori === "harian" && tanggalHariIni > tanggalTugas) {
+    if (tugas.kategori === "harian" && tanggalHariIni > tanggalTugas ) {
       waktunyaMasuk = true;
     }
 
