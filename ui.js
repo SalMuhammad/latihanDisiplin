@@ -342,6 +342,7 @@ $(document).ready(function () {
       deskripsi: deskripsi,
       prioritas: prioritas,
       poin: nominalHadiah,
+      waktuTambah: new Date().toISOString(),
       id_tugas: generateIdUnik(semuaTugas),
     };
   
@@ -546,25 +547,18 @@ $(document).on('change', '.checkbox-tugas', function () {
 // ? bagian pindahkan dari pendingCash ke saldo
 // ==============================================
 
+const now = new Date();
+const tanggalHariIni = now.getDate() + 0;
+const bulanIni = now.getMonth() + 1;
+const tahunIni = now.getFullYear();
+
 function cekDanPindahOtomatis() {
   const pendingCash = JSON.parse(localStorage.getItem("pendingCash")) || [];
   const akun = JSON.parse(localStorage.getItem("akun")) || { saldo: 0 };
-  const semuaTugas = JSON.parse(localStorage.getItem("dataTugas")) || {
-    pembentukan: { harian: [], mingguan: [], bulanan: [] },
-    pemusnahan: { harian: [], mingguan: [], bulanan: [] }
-  };
-
-  const semuaPemusnahan = [
-    ...semuaTugas.pemusnahan.harian,
-    ...semuaTugas.pemusnahan.mingguan,
-    ...semuaTugas.pemusnahan.bulanan
-  ];
 
   const now = new Date();
   const hariIni = now.toLocaleDateString('id-ID', { weekday: 'long' });
-  const tanggalHariIni = now.getDate() + 4;
-  const bulanIni = now.getMonth() + 2;   
-  const tahunIni = now.getFullYear() ;
+
 
   const sisaTugas = [];
 
@@ -632,7 +626,91 @@ function cekDanPindahOtomatis() {
   
 }
 
-window.addEventListener("load", cekDanPindahOtomatis);
+
+
+
+function tambahkanPemusnahanYangBelumMasuk() {
+  const pendingCash = JSON.parse(localStorage.getItem("pendingCash")) || [];
+  const semuaTugas = JSON.parse(localStorage.getItem("dataTugas")) || {
+    pembentukan: { harian: [], mingguan: [], bulanan: [] },
+    pemusnahan: { harian: [], mingguan: [], bulanan: [] }
+  };
+
+
+
+  const semuaPemusnahan = [
+    ...semuaTugas.pemusnahan.harian.map(t => ({ ...t, kategori: "harian" })),
+    ...semuaTugas.pemusnahan.mingguan.map(t => ({ ...t, kategori: "mingguan" })),
+    ...semuaTugas.pemusnahan.bulanan.map(t => ({ ...t, kategori: "bulanan" }))
+  ];
+
+  semuaPemusnahan.forEach(tugas => {
+
+    const waktuTambah = new Date(tugas.waktuTambah);
+    const tanggalTugas = waktuTambah.getDate(); // hanya untuk harian
+
+    const sudahAda = pendingCash.some(p => p.id_tugas === tugas.id_tugas);
+    if (sudahAda) return; // Skip kalau sudah masuk
+
+    let waktunyaMasuk = false;
+
+    // if (tugas.kategori === "harian") {
+    //   waktunyaMasuk = true; // masuk setiap hari
+    // }
+    // console.log(tanggalHariIni);
+    // console.log(tanggalTugas);
+
+    if (tugas.kategori === "harian" && tanggalHariIni > tanggalTugas) {
+      waktunyaMasuk = true;
+    }
+
+    if (tugas.kategori === "mingguan") {
+      if (
+        tahunIni > (tugas.deadlineTahun || tahunIni) ||
+        bulanIni > (tugas.deadlineBulan || bulanIni) ||
+        tanggalHariIni > (tugas.deadlineHari || tanggalHariIni)
+      ) {
+        waktunyaMasuk = true;
+      }
+    }
+
+    if (tugas.kategori === "bulanan") {
+      if (
+        tahunIni > (tugas.deadlineTahun || tahunIni) ||
+        bulanIni > (tugas.deadlineBulan || bulanIni) ||
+        tanggalHariIni >= (tugas.deadlineTanggal || tanggalHariIni + 1)
+      ) {
+        waktunyaMasuk = true;
+      }
+    }
+
+    if (waktunyaMasuk) {
+      pendingCash.push({
+        id_tugas: tugas.id_tugas,
+        judul: tugas.judul,
+        nominal: tugas.poin,
+        jenis: "pemusnahan",
+        kategori: tugas.kategori,
+        waktuTambah: new Date().toISOString(),
+        deadlineHari: tugas.deadlineHari,
+        deadlineBulan: tugas.deadlineBulan,
+        deadlineTahun: tugas.deadlineTahun,
+        deadlineTanggal: tugas.deadlineTanggal
+      });
+
+      const checkbox = document.querySelector(`input[type="checkbox"][data-id="${tugas.id_tugas}"]`);
+      if (checkbox) checkbox.checked = true;
+    }
+  });
+
+  localStorage.setItem("pendingCash", JSON.stringify(pendingCash));
+}
+
+
+window.addEventListener("load", () => {
+  cekDanPindahOtomatis();
+  tambahkanPemusnahanYangBelumMasuk();
+});
 
 
 
