@@ -549,10 +549,20 @@ $(document).on('change', '.checkbox-tugas', function () {
 function cekDanPindahOtomatis() {
   const pendingCash = JSON.parse(localStorage.getItem("pendingCash")) || [];
   const akun = JSON.parse(localStorage.getItem("akun")) || { saldo: 0 };
+  const semuaTugas = JSON.parse(localStorage.getItem("dataTugas")) || {
+    pembentukan: { harian: [], mingguan: [], bulanan: [] },
+    pemusnahan: { harian: [], mingguan: [], bulanan: [] }
+  };
+
+  const semuaPemusnahan = [
+    ...semuaTugas.pemusnahan.harian,
+    ...semuaTugas.pemusnahan.mingguan,
+    ...semuaTugas.pemusnahan.bulanan
+  ];
 
   const now = new Date();
   const hariIni = now.toLocaleDateString('id-ID', { weekday: 'long' });
-  const tanggalHariIni = now.getDate();
+  const tanggalHariIni = now.getDate() + 4;
   const bulanIni = now.getMonth() + 2;   
   const tahunIni = now.getFullYear() ;
 
@@ -597,17 +607,23 @@ function cekDanPindahOtomatis() {
     }
 
     if (pindahkan) {
-      akun.saldo += tugas.nominal;
-
+      
       // Uncheck checkbox di halaman (jika ada)
+      
       const checkbox = document.querySelector(`input[type="checkbox"][data-id="${tugas.id_tugas}"]`);
-      if (checkbox) checkbox.checked = false;
+
+      if(tugas.jenis === "pembentukan") {
+        akun.saldo += tugas.nominal;
+        if (checkbox) checkbox.checked = false;
+      } else {
+        sisaTugas.push(tugas);
+        if (checkbox) checkbox.checked = true;
+        akun.saldo += tugas.nominal;
+      }
     } else {
       sisaTugas.push(tugas);
     }
 
-   
-    
   });
 
   localStorage.setItem("pendingCash", JSON.stringify(sisaTugas));
