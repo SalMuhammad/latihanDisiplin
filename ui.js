@@ -202,6 +202,58 @@ $(document).ready(function () {
 
 
 
+    function hitungTotal(tugasArray) {
+      // return tugasArray.reduce((total, tugas) => total + (parseInt(tugas.nominal) || 0), 0);
+
+      let j = 0
+      tugasArray.forEach(function (e){
+        // console.log(e.poin);
+        j+= e.poin
+      })
+      // console.log(j);
+      return j
+    }
+    
+    $(document).ready(function () {
+      const dataTugas = JSON.parse(localStorage.getItem("dataTugas")) || {
+        pembentukan: { harian: [], mingguan: [], bulanan: [] },
+        pemusnahan: { harian: [], mingguan: [], bulanan: [] }
+      };
+    
+      const semuaHarian = [...dataTugas.pembentukan.harian, ...dataTugas.pemusnahan.harian];
+      const semuaMingguan = [...dataTugas.pembentukan.mingguan, ...dataTugas.pemusnahan.mingguan];
+      const semuaBulanan = [...dataTugas.pembentukan.bulanan, ...dataTugas.pemusnahan.bulanan];
+    
+      const totalHarianPerHari = hitungTotal(semuaHarian);
+      console.log(hitungTotal(semuaHarian))
+      const totalMingguanPerMinggu = hitungTotal(semuaMingguan);
+      const totalBulananPerBulan = hitungTotal(semuaBulanan);
+    
+      const totalHarianPerMinggu = totalHarianPerHari * 7;
+      const totalHarianPerBulan = totalHarianPerHari * 30;
+      const totalMingguanPerBulan = totalMingguanPerMinggu * 4;
+    
+      const totalSemuaPerBulan = totalHarianPerBulan + totalMingguanPerBulan + totalBulananPerBulan;
+    
+      $("#potensiPerHari").text("Rp " + totalHarianPerHari.toLocaleString());
+      $("#potensiPerMinggu").text("Rp " + totalHarianPerMinggu.toLocaleString());
+      $("#potensiPerBulanDariHarian").text("Rp " + totalHarianPerBulan.toLocaleString());
+      $("#potensiPerMingguDariMingguan").text("Rp " + totalMingguanPerMinggu.toLocaleString());
+      $("#potensiPerBulanDariMingguan").text("Rp " + totalMingguanPerBulan.toLocaleString());
+      $("#potensiPerBulanDariBulanan").text("Rp " + totalBulananPerBulan.toLocaleString());
+      $("#potensiTotalSemua").text("Rp " + totalSemuaPerBulan.toLocaleString());
+    });
+    
+
+
+
+
+
+
+
+
+
+
 
 
 
